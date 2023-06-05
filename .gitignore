@@ -1,10 +1,12 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
+.DS_Store
+venv
 *.py[cod]
 *$py.class
 
 # C extensions
-*.so
+*.sos
 
 # Distribution / packaging
 .Python
