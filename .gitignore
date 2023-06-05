@@ -6,7 +6,7 @@ venv
 *$py.class
 
 # C extensions
-*.sos
+*.so
 
 # Distribution / packaging
 .Python
