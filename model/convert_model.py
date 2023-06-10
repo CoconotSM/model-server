@@ -70,19 +70,16 @@ def searchingWords_extractor(text):
   return searching_words
 
 
-def final_convert(script_data, input_text):
+def final_convert(input_text, script_data):
     target_image = Image.open('static/background_img1.png')
 
     width, height = target_image.width, target_image.height  # (1966, 1102)
     margin = width * 0.04
     img_width, img_height = 700, 500
 
-    # getTitle: 받은 목차, getText: 받은 대본
-
     title = input_text
     keyword = getKeyword(script_data) 
-    # title = getTitle
-    # keyword = getKeyword(getText)
+
     searching_words = searchingWords_extractor(keyword)
     print('요약문 길이: ', len(keyword))
     print('키워드: ', searching_words)
