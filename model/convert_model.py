@@ -1,9 +1,7 @@
-
 from transformers import BertModel, PreTrainedTokenizerFast, BartForConditionalGeneration
 import torch
 from keybert import KeyBERT
 from kiwipiepy import Kiwi
-
 
 from PIL import Image, ImageDraw, ImageFont
 import os
@@ -22,7 +20,13 @@ tokenizer = PreTrainedTokenizerFast.from_pretrained('gogamza/kobart-summarizatio
 model_kobart = BartForConditionalGeneration.from_pretrained('gogamza/kobart-summarization')  # 이미지 중심
 model_kobert = BertModel.from_pretrained('skt/kobert-base-v1')  # 키워드 중심
 
+# 모델선택용 배열 생성 [0:글, 1:이미지, 2:키워드]
+model_image = model_kobart
+model_text = model_kobert
+model_keyword = True   # 키워드용
+modelSET = [model_text, model_image, model_keyword]  
 
+# model_num : FE에서 받은 드롭다운 배열
 def getKeyword(text):
   input_ids = tokenizer.encode(text)
   input_ids = [tokenizer.bos_token_id] + input_ids + [tokenizer.eos_token_id]
@@ -70,16 +74,30 @@ def searchingWords_extractor(text):
   return searching_words
 
 
-def final_convert(input_text, script_data):
-    target_image = Image.open('static/background_img1.png')
+def final_convert(script_data, input_text, model_data):
+    target_image_num = int(model_data)+1
+    target_image_num_str = str(target_image_num)
+    target_image = Image.open('static/background_img'+target_image_num_str+'.png')          # 배경이미지 : 클라이언트에서 넘어오는 버튼의 인덱스 값을 받아서, 배경 이미지 오픈
+                                                                     # 배경이미지 및  위치 배정 함수를 새로 만들어야 함.
+    
+    print("이미지 숫자 디버깅중: "+target_image_num_str)
+    # 모델에 따라 다른 배치 구성하기
+    # if model_data == 0 :
+    #   width, height = target_image.width, target_image.height  # (1966, 1102)
+    #   margin = width * 0.04
+       
 
     width, height = target_image.width, target_image.height  # (1966, 1102)
     margin = width * 0.04
     img_width, img_height = 700, 500
 
-    title = input_text
-    keyword = getKeyword(script_data) 
+    # getTitle: 받은 목차, getText: 받은 대본
 
+    title = input_text
+    #model_num = model_data                                          # model_num : FE에서 받은 드롭다운 배열
+    keyword = getKeyword(script_data) 
+    # title = getTitle
+    # keyword = getKeyword(getText)
     searching_words = searchingWords_extractor(keyword)
     print('요약문 길이: ', len(keyword))
     print('키워드: ', searching_words)
@@ -112,7 +130,7 @@ def final_convert(input_text, script_data):
     else:
         pos = height - margin * 2.2
     draw.text((margin, pos), txt, fill="black", font=selectedFont_content, align='left')
-    target_image.save("slide.png") # 이미지를 저장
+    # target_image.save("slide.png") # 이미지를 저장
     
 
     return target_image
