@@ -21,10 +21,11 @@ def convert():
     input_text = data.get('input')
     script_data = data.get('script')
     model_data = data.get('model')
+    img_type = data.get('imgtype')
 
 
     # TODO: 딥러닝 모델을 사용하여 변환 작업 수행
-    output = model.convert_model.final_convert(script_data, input_text, model_data)
+    output = model.convert_model.final_convert(script_data, input_text, model_data, img_type)
     
 
     im_file = BytesIO()
