@@ -66,7 +66,7 @@ def noun_extractor(text):
           
   return results
 
-def searchingWords_extractor(text, k):
+def searchingWords_extractor(text, k, img_type):
   nouns = noun_extractor(text)
   noun_str = ' '.join(nouns)
 
@@ -78,14 +78,20 @@ def searchingWords_extractor(text, k):
   n = len(search_keylist)
 
   searching_words = []  # 이미지 검색 키워드 리스트
+  searching_type_words = []
 
   for i in range(n):
     searching_words.append(search_keylist[i][0])
 
-  return searching_words
+  for j in searching_words:
+     searching_type = j + img_type
+     searching_type_words.append(searching_type)
 
 
-def final_convert(script_data, input_text, model_data):
+  return searching_type_words
+
+
+def final_convert(script_data, input_text, model_data, img_type):
     target_image_num = int(model_data)+1
     target_image_num_str = str(target_image_num)
     target_image = Image.open('static/background_img'+target_image_num_str+'.png')          # 배경이미지 : 클라이언트에서 넘어오는 버튼의 인덱스 값을 받아서, 배경 이미지 오픈
@@ -108,7 +114,7 @@ def final_convert(script_data, input_text, model_data):
       keyword = getKeyword(script_data, target_image_num) 
       # title = getTitle
       # keyword = getKeyword(getText)
-      searching_words = searchingWords_extractor(keyword, int(model_data)+2)
+      searching_words = searchingWords_extractor(keyword, int(model_data)+2, img_type)
       print('요약문 길이: ', len(keyword))
       print('키워드: ', searching_words)
 
@@ -148,7 +154,7 @@ def final_convert(script_data, input_text, model_data):
                      
       keyword = getKeyword(script_data, target_image_num) 
       
-      searching_words = searchingWords_extractor(keyword, int(model_data))
+      searching_words = searchingWords_extractor(keyword, int(model_data),img_type)
       print('요약문 길이: ', len(keyword))
       print('키워드: ', searching_words)
 
@@ -170,7 +176,7 @@ def final_convert(script_data, input_text, model_data):
 
       while len(keyword) > 0:
           if len(keyword) > 10:
-              txt = keyword[:35]  
+              txt = keyword[:35] + '\n'
               keyword = keyword[35:]
           else:
               txt = keyword  
@@ -189,7 +195,7 @@ def final_convert(script_data, input_text, model_data):
     elif target_image_num == 3:
       keyword = getKeyword(script_data, target_image_num) 
 
-      searching_words = searchingWords_extractor(keyword, int(model_data)+1)
+      searching_words = searchingWords_extractor(keyword, int(model_data)+1, img_type)
       print('요약문 길이: ', len(keyword))
       print('키워드: ', searching_words)
 
