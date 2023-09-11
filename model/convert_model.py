@@ -122,8 +122,10 @@ def final_convert(script_data, input_text, model_data, img_type):
         query = i
         downloader.download(query, limit=1,  output_dir='./', adult_filter_off=True, force_replace=False, timeout=60)
 
-      add_image0 = Image.open('./' + searching_words[0] + '/image_1.jpg')
-      add_image1 = Image.open('./' + searching_words[1] + '/image_1.jpg')
+      image_path0 = './' + searching_words[0]
+      image_path1 = './' + searching_words[1]
+      add_image0 = Image.open(image_path0 + '/' + os.listdir(image_path0)[0])
+      add_image1 = Image.open(image_path1 + '/' + os.listdir(image_path1)[0])
       add_image0 = add_image0.resize((img_width, img_height)) 
       add_image1 = add_image1.resize((img_width, img_height)) 
 
