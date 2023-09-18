@@ -17,7 +17,7 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 kiwi = Kiwi()
 
 tokenizer = PreTrainedTokenizerFast.from_pretrained('gogamza/kobart-summarization')
-model_kobart = BartForConditionalGeneration.from_pretrained('gogamza/kobart-summarization')  # 이미지 중심
+model_kobart = BartForConditionalGeneration.from_pretrained('gogamza/kobart-summarization')  # 글 & 이미지 중심 요약문 생성
 model_kobert = BertModel.from_pretrained('skt/kobert-base-v1')  # 키워드 중심
 
 
@@ -30,10 +30,10 @@ def getKeyword(text, target_image_num):
 
 
   if target_image_num == 2:  # 글 중심
-    lpenalty = 3.0
-    mlength = 200 #150
-    minlength = 100
-    nbeams = 3 #4
+    lpenalty = 2.0
+    mlength = 256 #150
+    minlength = 128
+    nbeams = 6 #4
   else:
     lpenalty = 2.0
     mlength = 60
@@ -41,7 +41,6 @@ def getKeyword(text, target_image_num):
     nbeams = 4
 
 
-     
 
   summary_text_ids = model_kobart.generate(
     input_ids=input_ids,
@@ -129,23 +128,28 @@ def final_convert(script_data, input_text, model_data, img_type):
       add_image0 = add_image0.resize((img_width, img_height)) 
       add_image1 = add_image1.resize((img_width, img_height)) 
 
-      target_image.paste(im=add_image0, box=(int(margin*2.5), int(margin*3)))
-      target_image.paste(im=add_image1, box=(int(margin*4.5+img_width), int(margin*3)))
+      target_image.paste(im=add_image0, box=(int(margin*2.5), int(margin*3.5)))
+      target_image.paste(im=add_image1, box=(int(margin*4.5+img_width), int(margin*3.5)))
       
 
       draw = ImageDraw.Draw(target_image)
 
       draw.text((margin, margin), title, fill="black", font=selectedFont_title, align='center')
-      if len(keyword) > 50:
-        txt = keyword[:60] + '\n' + keyword[60:]
-        pos = height - margin * 2.6
-      else:
-        pos = height - margin * 2.2
+      
+      txt = ''
+      pos = height - margin * 2.2
 
-
-      draw.text((margin, pos), txt, fill="black", font=selectedFont_content, align='left')
-      target_image.save("slide.png") # 이미지를 저장
-    
+      while len(keyword) > 0:
+          if len(keyword) > 50:
+              txt = keyword[:60] + '\n'
+              keyword = keyword[60:]
+          else:
+              txt = keyword  
+              keyword = ''
+          draw.text((margin, pos), txt, fill="black", font=selectedFont_content, align='left')
+          
+          # 텍스트를 그린 후에 높이를 업데이트
+          pos += margin * 0.6
 
       return target_image
     
@@ -154,7 +158,15 @@ def final_convert(script_data, input_text, model_data, img_type):
     # 글 중심
     elif target_image_num == 2 :
                      
-      keyword = getKeyword(script_data, target_image_num) 
+      keyword = getKeyword(script_data, target_image_num)
+      
+      # 공백 제거
+      sentences = keyword.strip().split('.')
+      sentences = sentences[:-1]
+      print(sentences)
+      sentences = [i.strip() + '.' for i in sentences]
+      keyword = ' '.join(sentences)
+      print(keyword)
       
       searching_words = searchingWords_extractor(keyword, int(model_data),img_type)
       print('요약문 길이: ', len(keyword))
@@ -164,7 +176,8 @@ def final_convert(script_data, input_text, model_data, img_type):
         query = i
         downloader.download(query, limit=1,  output_dir='./', adult_filter_off=True, force_replace=False, timeout=60)
 
-      add_image0 = Image.open('./' + searching_words[0] + '/image_1.jpg')
+      image_path0 = './' + searching_words[0]
+      add_image0 = Image.open(image_path0 + '/' + os.listdir(image_path0)[0])
       add_image0 = add_image0.resize((img_width, img_height)) 
 
       target_image.paste(im=add_image0, box=(int(margin), int(margin*4)))
@@ -174,7 +187,7 @@ def final_convert(script_data, input_text, model_data, img_type):
       draw.text((margin, margin), title, fill="black", font=selectedFont_title, align='center')
 
       txt = ''
-      pos = margin * 0.5
+      pos = margin * 4
 
       while len(keyword) > 0:
           if len(keyword) > 10:
@@ -192,6 +205,7 @@ def final_convert(script_data, input_text, model_data, img_type):
 
       return target_image
       
+
 
     # 키워드 중심
     elif target_image_num == 3:
